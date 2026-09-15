@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: uni_postgres
+    environment:
+      POSTGRES_USER: uni_admin
+      POSTGRES_PASSWORD: uni_secure_password
+      POSTGRES_DB: university_platform
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../../packages/database/migrations/001_initial_schema.sql:/docker-entrypoint-initdb.d/001_initial_schema.sql
+
+  redis:
+    image: redis:7-alpine
+    container_name: uni_redis
+    ports:
+      - "6379:6379"
+
+  api:
+    build:
+      context: ../../services/api
+      dockerfile: Dockerfile
+    container_name: uni_api
+    environment:
+      DATABASE_URL: postgresql+asyncpg://uni_admin:uni_secure_password@postgres:5432/university_platform
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: dev_super_secret_jwt_key_change_in_production
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  postgres_data:
