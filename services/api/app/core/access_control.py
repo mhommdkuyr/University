@@ -43,6 +43,7 @@ class Permission(str, Enum):
     ATTENDANCE_VIEW = "attendance.view"
     ATTENDANCE_WRITE = "attendance.write"
     PUBLISH_COURSE = "courses.publish"
+    COURSE_ENROLL = "courses.enroll"
     MANAGE_SCHEDULE = "schedule.manage"
     MANAGE_CONTENT = "content.manage"
     MANAGE_UNIVERSITY = "university.manage"
@@ -133,6 +134,7 @@ ROLE_DEFAULT_PERMISSIONS: Mapping[PlatformRole, frozenset[Permission]] = {
         Permission.VIEW_PUBLIC_PROJECTS,
         Permission.PROJECT_MANAGE,
     }),
+    # The representative role is deliberately minimal and can be expanded per tenant.
     PlatformRole.REPRESENTATIVE: frozenset({
         Permission.VIEW_ACADEMICS,
         Permission.VIEW_PUBLIC,
@@ -141,6 +143,7 @@ ROLE_DEFAULT_PERMISSIONS: Mapping[PlatformRole, frozenset[Permission]] = {
     PlatformRole.STUDENT: frozenset({
         Permission.VIEW_ACADEMICS,
         Permission.USE_AI,
+        Permission.COURSE_ENROLL,
         Permission.VIEW_PUBLIC,
         Permission.VIEW_PUBLIC_PROJECTS,
         Permission.PROJECT_MANAGE,
@@ -175,10 +178,11 @@ class AccessPolicy:
     ) -> AccessContext:
         permissions = set(self.permissions_for(tenant_id, role))
         permissions.update(extra_permissions)
-        # Graduated/withdrawn students must never inherit active-student AI or academic permissions.
+        # Non-active students never inherit active-student academic/AI capabilities.
         if role == PlatformRole.STUDENT and student_status != StudentStatus.ACTIVE:
             permissions.discard(Permission.USE_AI)
             permissions.discard(Permission.VIEW_ACADEMICS)
+            permissions.discard(Permission.COURSE_ENROLL)
         return AccessContext(
             tenant_id=tenant_id,
             user_id=user_id,
