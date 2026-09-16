@@ -35,11 +35,11 @@ async def execute_agent_command(request: Request, payload: AgentRequest):
     tenant_id = context.tenant_id
     # The model may propose an intent, but deterministic authorization decides access.
     if "تسجيل" in payload.prompt or "enroll" in payload.prompt.lower():
-        decision = _authorization.decide(context, Permission.VIEW_ACADEMICS, write=True)
+        decision = _authorization.decide(context, Permission.COURSE_ENROLL, write=True)
         return {
             "intent": "COURSE_REGISTRATION",
             "action_type": "WRITE",
-            "requires_confirmation": True,
+            "requires_confirmation": decision.requires_confirmation,
             "confirmation_payload": {
                 "course_code": "SWE-432",
                 "credits": 3,
