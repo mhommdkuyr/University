@@ -1,1 +1,0 @@
-The role policy endpoint is being finalized to use the centralized access-control enums and tenant persistence. This note is temporary and should be removed when the repository-backed policy service is wired.
