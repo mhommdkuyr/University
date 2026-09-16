@@ -5,7 +5,7 @@ from typing import Dict, List
 from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field
 
-from app.core.access_control import Permission, PlatformRole, ROLE_DEFAULT_PERMISSIONS
+from app.core.access_control import Permission, PlatformRole, ROLE_DEFAULT_PERMISSIONS, request_access_context
 
 router = APIRouter()
 
@@ -20,7 +20,9 @@ class RolePolicyUpdate(BaseModel):
 
 
 @router.get("/catalog", response_model=List[RolePolicy])
-async def role_catalog() -> List[RolePolicy]:
+async def role_catalog(request: Request) -> List[RolePolicy]:
+    # The catalog itself is descriptive and contains no tenant-private records.
+    _ = request
     return [
         RolePolicy(role=role, permissions=sorted(perms, key=lambda item: item.value))
         for role, perms in ROLE_DEFAULT_PERMISSIONS.items()
@@ -29,12 +31,10 @@ async def role_catalog() -> List[RolePolicy]:
 
 @router.get("/policies", response_model=Dict[str, List[str]])
 async def get_tenant_role_policies(request: Request) -> Dict[str, List[str]]:
-    """Return effective defaults for the current university.
-
-    Tenant overrides are persisted in tenant_role_policies. The repository layer
-    can later overlay those rows without changing this API contract.
-    """
-    _tenant_id = getattr(request.state, "tenant_id", "default")
+    context = request_access_context(request)
+    if Permission.MANAGE_ROLE_POLICY not in context.permissions:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=403, detail="Role policy access denied")
     return {
         role.value: [permission.value for permission in permissions]
         for role, permissions in ROLE_DEFAULT_PERMISSIONS.items()
@@ -47,10 +47,8 @@ async def set_tenant_role_policy(
     payload: RolePolicyUpdate,
     request: Request,
 ) -> RolePolicy:
-    """Validate a tenant policy payload.
-
-    A production persistence adapter must require MANAGE_ROLE_POLICY before write
-    and execute the mutation inside the tenant RLS transaction.
-    """
-    _tenant_id = getattr(request.state, "tenant_id", "default")
+    context = request_access_context(request)
+    if Permission.MANAGE_ROLE_POLICY not in context.permissions:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=403, detail="Role policy modification denied")
     return RolePolicy(role=role, permissions=payload.permissions)
