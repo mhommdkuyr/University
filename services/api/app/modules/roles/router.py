@@ -5,11 +5,7 @@ from typing import Dict, List
 from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field
 
-from app.core.access_control import (
-    Permission,
-    PlatformRole,
-    Role_DEFAULT_PERMISSIONS,
-)
+from app.core.access_control import Permission, PlatformRole, ROLE_DEFAULT_PERMISSIONS
 
 router = APIRouter()
 
@@ -33,17 +29,15 @@ async def role_catalog() -> List[RolePolicy]:
 
 @router.get("/policies", response_model=Dict[str, List[str]])
 async def get_tenant_role_policies(request: Request) -> Dict[str, List[str]]:
-    """Return effective policies for the current university.
+    """Return effective defaults for the current university.
 
-    Persistent tenant overrides will be loaded from the database when the policy
-    repository is connected. Until then this endpoint exposes the safe defaults.
+    Tenant overrides are persisted in tenant_role_policies. The repository layer
+    can later overlay those rows without changing this API contract.
     """
-    tenant_id = getattr(request.state, "tenant_id", "default")
+    _tenant_id = getattr(request.state, "tenant_id", "default")
     return {
         role.value: [permission.value for permission in permissions]
-        for role, permissions in {
-            role: ROLE_DEFAULT_PERMISSIONS[role] for role in ROLE_DEFAULT_PERMISSIONS
-        }.items()
+        for role, permissions in ROLE_DEFAULT_PERMISSIONS.items()
     }
 
 
@@ -53,10 +47,10 @@ async def set_tenant_role_policy(
     payload: RolePolicyUpdate,
     request: Request,
 ) -> RolePolicy:
-    """Prepare a tenant-specific policy.
+    """Validate a tenant policy payload.
 
-    This endpoint is intentionally scoped to a tenant and should later require
-    MANAGE_ROLE_POLICY through the authenticated access context before persistence.
+    A production persistence adapter must require MANAGE_ROLE_POLICY before write
+    and execute the mutation inside the tenant RLS transaction.
     """
     _tenant_id = getattr(request.state, "tenant_id", "default")
     return RolePolicy(role=role, permissions=payload.permissions)
