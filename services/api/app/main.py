@@ -13,6 +13,7 @@ from app.modules.roles.router import router as roles_router
 from app.modules.identity.router import router as identity_router
 from app.modules.features.router import router as features_router
 from app.modules.teaching.router import router as teaching_router
+from app.modules.tenants.billing_and_ads import router as billing_and_ads_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -35,6 +36,7 @@ app.add_middleware(TenantMiddleware)
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["Authentication & SSO"])
 app.include_router(identity_router, prefix="/api/v1/identity", tags=["University Identity"])
 app.include_router(tenants_router, prefix="/api/v1/tenants", tags=["Tenants Management"])
+app.include_router(billing_and_ads_router, prefix="/api/v1/commercial", tags=["Billing, Subscriptions & Ads"])
 app.include_router(roles_router, prefix="/api/v1/roles", tags=["Role Policies"])
 app.include_router(features_router, prefix="/api/v1/features", tags=["Adaptive University Features"])
 

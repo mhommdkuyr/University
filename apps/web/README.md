@@ -1,2 +1,2 @@
-# Public University Portal (SEO & Web Showcase)
-Public-facing web pages for graduation projects, faculty directory, and research.
+# Public Web & Showcase
+SEO-optimized public portal for indexed graduation projects, research showcase, and public campus directory.

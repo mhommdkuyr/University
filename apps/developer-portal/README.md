@@ -1,2 +1,2 @@
 # Developer Portal
-Swagger/OpenAPI UI, API Key generation, and Webhook monitoring.
+Interactive OpenAPI documentation, API key management, and webhook configurations for external university mobile app integration.

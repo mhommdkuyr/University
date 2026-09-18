@@ -1,2 +1,2 @@
-# Platform SuperAdmin Dashboard
-Multi-tenant provisioning, AI Gateway router, and usage analytics.
+# Platform Admin Dashboard
+SaaS multi-tenant control plane for active-user billing, quota limits, tenant onboarding, and platform-wide monitoring.
