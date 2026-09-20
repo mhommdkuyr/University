@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.access_control import AccessPolicy, Permission, request_access_context
 from app.core.config import settings
 from app.core.rate_limit import limiter
-from app.core.database import AuditLog, SessionLocal
+from app.core.database import AuditLog, SessionLocal, set_tenant_context
 from app.modules.access.service import AuthorizationService
 
 
@@ -103,6 +103,7 @@ async def execute_agent_command(request: Request, payload: AgentRequest):
                 data = response.json()
                 text = data["choices"][0]["message"]["content"]
                 async with SessionLocal() as session:
+                    await set_tenant_context(session, tenant_id)
                     session.add(AuditLog(
                         id=str(uuid4()),
                         tenant_id=tenant_id,
@@ -124,6 +125,7 @@ async def execute_agent_command(request: Request, payload: AgentRequest):
                 continue
 
     async with SessionLocal() as session:
+        await set_tenant_context(session, tenant_id)
         session.add(AuditLog(
             id=str(uuid4()),
             tenant_id=tenant_id,
