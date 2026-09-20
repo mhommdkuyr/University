@@ -12,6 +12,12 @@ jobs:
       DEFAULT_API_KEY: ${{ secrets.Default }}
       AI_BASE_URL: https://api.openai.com/v1
       AI_MODEL: gpt-4o-mini
+      AI_ENABLED: false
+      DATABASE_URL: sqlite+aiosqlite:///./ci.db
+      ENVIRONMENT: test
+      SEED_DEMO_DATA: true
+      JWT_SECRET: ci-only-test-secret-change-in-production
+      CORS_ORIGINS: http://localhost:8080
       PYTHONPATH: services/api
     steps:
       - uses: actions/checkout@v4
