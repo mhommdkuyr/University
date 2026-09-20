@@ -13,6 +13,7 @@ from app.core.middleware import TenantMiddleware
 from app.modules.academics.router import router as academics_router
 from app.modules.ai_agent.router import router as ai_agent_router
 from app.modules.audit.router import router as audit_router
+from app.modules.developer.router import router as developer_router
 from app.modules.auth.router import router as auth_router
 from app.modules.features.router import router as features_router
 from app.modules.identity.router import router as identity_router
@@ -46,7 +47,7 @@ app.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "X-Tenant-ID"],
+    allow_headers=["Authorization", "Content-Type", "X-Tenant-ID", "X-API-Key"],
 )
 app.add_middleware(TenantMiddleware)
 
@@ -71,6 +72,7 @@ app.include_router(projects_router, prefix="/api/v1/projects", tags=["Student Pr
 app.include_router(search_router, prefix="/api/v1/search", tags=["Search"])
 app.include_router(ai_agent_router, prefix="/api/v1/ai", tags=["AI Assistant & Agents"])
 app.include_router(audit_router, prefix="/api/v1/audit", tags=["Audit & Security Logs"])
+app.include_router(developer_router, prefix="/api/v1/developer", tags=["Developer API Keys"])
 
 
 @app.get("/", tags=["System"])
