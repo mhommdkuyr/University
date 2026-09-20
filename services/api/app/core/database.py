@@ -201,6 +201,26 @@ async def init_db() -> None:
                 full_name="Demo University President",
             ))
 
+        demo_accounts = [
+            ("instructor@demo.edu", "DemoInstructor123!", "demo-instructor", "instructor", None, None, "Demo Instructor"),
+            ("representative@demo.edu", "DemoRepresentative123!", "demo-representative", "representative", None, None, "Demo Student Representative"),
+            ("university-admin@demo.edu", "DemoUniversityAdmin123!", "demo-university-admin", "university_admin", None, None, "Demo University Administrator"),
+            ("dean@demo.edu", "DemoDean123!", "demo-dean", "dean", None, None, "Demo Dean"),
+            ("department-head@demo.edu", "DemoDepartmentHead123!", "demo-department-head", "department_head", None, None, "Demo Department Head"),
+            ("alumni@demo.edu", "DemoAlumni123!", "demo-alumni", "alumni", "graduated", "DEMO-2001", "Demo Alumni"),
+            ("withdrawn@demo.edu", "DemoWithdrawn123!", "demo-withdrawn", "student", "withdrawn", "DEMO-3001", "Demo Withdrawn Student"),
+        ]
+
+        for email, password, user_id, role, student_status, student_number, full_name in demo_accounts:
+            existing = await session.scalar(select(User).where(User.tenant_id == "demo", User.email == email))
+            if existing is None:
+                session.add(User(
+                    id=user_id, tenant_id="demo", email=email,
+                    password_hash=hash_password(password), role=role,
+                    student_status=student_status, student_number=student_number,
+                    full_name=full_name,
+                ))
+
         admin = await session.scalar(select(User).where(User.tenant_id == "demo", User.email == "admin@platform.local"))
         if admin is None:
             session.add(User(
