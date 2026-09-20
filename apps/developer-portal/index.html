@@ -1,1 +1,6 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>بوابة المطور</title><link rel="stylesheet" href="../web/styles.css"></head><body><main><h1>بوابة المطور</h1><p>استخدم OpenAPI لبناء تطبيقات الجامعة مع مفاتيح قابلة للإلغاء ودون كشف الأسرار.</p><p><a class="button" href="/api/v1/docs">فتح توثيق API</a></p></main></body></html>
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>بوابة المطور</title><link rel="stylesheet" href="../web/styles.css"></head>
+<body><main><header><strong>بوابة المطور</strong><a href="../web/index.html">الرئيسية</a></header>
+<section class="panel"><h1>واجهات المنصة</h1><p>وثائق OpenAPI ومسارات REST للتكامل مع أنظمة الجامعة والتطبيقات.</p><a class="button" href="/api/v1/docs">فتح وثائق API</a><a class="button secondary" href="/api/v1/openapi.json">OpenAPI JSON</a><h2>الصحة</h2><pre id="health">...</pre></section>
+<script>fetch('/api/v1/health').then(r=>r.json()).then(x=>health.textContent=JSON.stringify(x,null,2)).catch(()=>health.textContent='تعذر الاتصال');</script>
+</main></body></html>
