@@ -142,12 +142,12 @@ async def get_session() -> AsyncIterator[AsyncSession]:
 async def set_tenant_context(session: AsyncSession, tenant_id: str | None) -> None:
     if not tenant_id or tenant_id == "default":
         return
+    if session.get_bind().dialect.name != "postgresql":
+        return
     await session.execute(
         text("SET LOCAL app.tenant_id = :tenant_id"),
         {"tenant_id": tenant_id},
     )
-
-
 async def init_db() -> None:
     if not settings.AUTO_CREATE_SCHEMA and settings.ENVIRONMENT == "production":
         return
