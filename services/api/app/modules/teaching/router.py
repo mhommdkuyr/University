@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.access_control import Permission, request_access_context
-from app.core.database import AttendanceRecord, Course, StudentGroup, get_session
+from app.core.database import AttendanceRecord, Course, StudentGroup as StudentGroupModel, get_session
 
 
 router = APIRouter()
@@ -53,7 +53,7 @@ async def create_group(
     if Permission.CREATE_GROUP not in context.permissions:
         raise HTTPException(status_code=403, detail="Group creation denied")
 
-    group = StudentGroup(
+    group = StudentGroupModel(
         id=str(uuid4()),
         tenant_id=context.tenant_id,
         course_id=payload.course_id,
