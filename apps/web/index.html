@@ -1,1 +1,65 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>University Platform</title><link rel="stylesheet" href="/styles.css"></head><body><main><header><strong>University</strong><nav><a href="#features">المزايا</a><a href="#projects">المشاريع</a><a href="#login">تسجيل الدخول</a></nav></header><section class="hero"><div><span class="badge">منصة جامعية متعددة الجامعات</span><h1>البنية الرقمية لجامعتك، وفق سياستها.</h1><p>هوية وصلاحيات ومقررات وحضور ومشاريع وذكاء اصطناعي ضمن طبقة واحدة، مع احترام أنظمة الجامعة الحالية.</p><a class="button" href="#login">ابدأ</a><a class="button secondary" href="#features">استكشف</a></div><div class="panel"><b>حماية متعددة المستويات</b><p>الجامعة ← الدور ← حالة الطالب ← الميزة</p><hr><p>الذكاء الاصطناعي متاح للطلاب المسجلين وفق سياسة الجامعة.</p></div></section><section id="features" class="grid"><article><b>الهوية</b><p>سياسة دخول قابلة للتكييف لكل جامعة.</p></article><article><b>الأكاديميات</b><p>مقررات، مجموعات، حضور ونشر.</p></article><article><b>المشاريع</b><p>صفحات مشاريع عامة قابلة للفهرسة.</p></article><article><b>AI</b><p>مساعد جامعي خلف بوابة صلاحيات.</p></article></section><section id="projects"><h2>مساحة المشاريع</h2><div id="project-list" class="grid"></div></section><section id="login"><h2>تسجيل الدخول</h2><form id="login-form"><input name="email" type="email" placeholder="البريد الجامعي" required><input name="password" type="password" placeholder="كلمة المرور" required><button class="button">دخول</button><p id="status"></p></form></section></main><script src="/app.js"></script></body></html>
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="منصة رقمية متعددة الجامعات للهوية والأكاديميات والمشاريع والذكاء الاصطناعي وفق سياسة كل جامعة.">
+  <title>University Platform</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<main>
+  <header>
+    <strong>University</strong>
+    <nav>
+      <a href="#features">المزايا</a>
+      <a href="#projects">المشاريع</a>
+      <a href="#login">تسجيل الدخول</a>
+      <a href="/api/v1/docs">API</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div>
+      <span class="badge">منصة جامعية متعددة الجامعات</span>
+      <h1>البنية الرقمية لجامعتك، وفق سياستها.</h1>
+      <p>هوية وصلاحيات ومقررات وحضور ومشاريع وذكاء اصطناعي ضمن طبقة واحدة، مع احترام أنظمة الجامعة الحالية.</p>
+      <a class="button" href="#login">ابدأ</a>
+      <a class="button secondary" href="#features">استكشف</a>
+    </div>
+    <div class="panel">
+      <b>حماية متعددة المستويات</b>
+      <p>الجامعة ← الهوية ← الدور ← حالة الطالب ← الميزة</p>
+      <hr>
+      <p>الذكاء الاصطناعي لا ينفذ إجراءات حساسة قبل التحقق من الصلاحية والتأكيد.</p>
+    </div>
+  </section>
+
+  <section id="features" class="grid">
+    <article><b>الهوية</b><p>سياسة دخول قابلة للتكييف لكل جامعة.</p></article>
+    <article><b>الأكاديميات</b><p>مقررات، مجموعات، حضور ونشر.</p></article>
+    <article><b>المشاريع</b><p>صفحات مشاريع عامة قابلة للنشر.</p></article>
+    <article><b>AI</b><p>مساعد جامعي خلف بوابة صلاحيات.</p></article>
+  </section>
+
+  <section id="projects">
+    <h2>المشاريع المنشورة</h2>
+    <p class="muted">أدخل معرف الجامعة لعرض المساحة العامة الخاصة بها.</p>
+    <input id="tenant-id" value="demo" placeholder="معرف الجامعة مثل demo" autocomplete="organization">
+    <div id="project-list" class="grid"></div>
+  </section>
+
+  <section id="login">
+    <h2>تسجيل الدخول</h2>
+    <form id="login-form">
+      <input name="tenant_id" value="demo" placeholder="معرف الجامعة" autocomplete="organization">
+      <input name="email" type="email" placeholder="البريد الجامعي" required autocomplete="username">
+      <input name="password" type="password" placeholder="كلمة المرور" required autocomplete="current-password">
+      <button class="button">دخول</button>
+      <p id="status"></p>
+    </form>
+  </section>
+</main>
+<script src="/app.js"></script>
+</body>
+</html>
