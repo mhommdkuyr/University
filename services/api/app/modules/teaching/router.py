@@ -50,7 +50,10 @@ async def create_group(
     session: AsyncSession = Depends(get_session),
 ):
     context = request_access_context(request)
-    if Permission.CREATE_GROUP not in context.permissions:
+    if (
+        Permission.CREATE_GROUP not in context.permissions
+        and Permission.MANAGE_GROUP not in context.permissions
+    ):
         raise HTTPException(status_code=403, detail="Group creation denied")
 
     group = StudentGroupModel(
