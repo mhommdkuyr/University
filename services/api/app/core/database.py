@@ -148,7 +148,7 @@ async def set_tenant_context(session: AsyncSession, tenant_id: str | None) -> No
     if session.get_bind().dialect.name != "postgresql":
         return
     await session.execute(
-        text("SET LOCAL app.tenant_id = :tenant_id"),
+        text("SELECT set_config('app.tenant_id', :tenant_id, true)"),
         {"tenant_id": tenant_id},
     )
 async def init_db() -> None:
