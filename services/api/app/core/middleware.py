@@ -12,22 +12,18 @@ from app.core.database import RolePolicyRecord, SessionLocal
 from app.core.security import decode_access_token
 
 
-PUBLIC_PREFIXES = (
-    "/api/v1/health",
-    "/api/v1/docs",
-    "/api/v1/openapi.json",
-    "/api/v1/auth/login",
-    "/api/v1/projects",
-    "/api/v1/search/semantic",
-)
-
-
 class TenantMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         header_tenant = request.headers.get("X-Tenant-ID")
         request.state.tenant_id = header_tenant or "default"
 
-        if request.url.path.startswith(PUBLIC_PREFIXES):
+        path = request.url.path
+        public_request = (
+            path in {"/api/v1/health", "/api/v1/docs", "/api/v1/openapi.json", "/api/v1/auth/login"}
+            or (request.method == "GET" and path.startswith("/api/v1/projects"))
+            or (request.method == "GET" and path == "/api/v1/search/semantic")
+        )
+        if public_request:
             return await call_next(request)
 
         authorization = request.headers.get("Authorization", "")
@@ -77,5 +73,4 @@ class TenantMiddleware(BaseHTTPMiddleware):
             student_status=student_status,
             permissions=frozenset(permissions),
         )
-
         return await call_next(request)
