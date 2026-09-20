@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import AsyncIterator
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, select
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, select, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -122,7 +122,15 @@ class AuditLog(Base):
     timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), index=True)
 
 
-engine = create_async_engine(settings.DATABASE_URL, pool_pre_ping=True)
+connect_args = {}
+if settings.DATABASE_URL.startswith("postgresql") and settings.DATABASE_SSL_MODE:
+    connect_args["ssl"] = settings.DATABASE_SSL_MODE
+
+engine = create_async_engine(
+    settings.DATABASE_URL,
+    pool_pre_ping=True,
+    connect_args=connect_args,
+)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 
@@ -131,7 +139,19 @@ async def get_session() -> AsyncIterator[AsyncSession]:
         yield session
 
 
+async def set_tenant_context(session: AsyncSession, tenant_id: str | None) -> None:
+    if not tenant_id or tenant_id == "default":
+        return
+    await session.execute(
+        text("SET LOCAL app.tenant_id = :tenant_id"),
+        {"tenant_id": tenant_id},
+    )
+
+
 async def init_db() -> None:
+    if not settings.AUTO_CREATE_SCHEMA and settings.ENVIRONMENT == "production":
+        return
+
     async with engine.begin() as connection:
         await connection.run_sync(Base.metadata.create_all)
 
