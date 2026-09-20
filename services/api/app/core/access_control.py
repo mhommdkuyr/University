@@ -74,6 +74,7 @@ ROLE_DEFAULT_PERMISSIONS: Mapping[PlatformRole, frozenset[Permission]] = {
         Permission.VIEW_STUDENT_PRIVATE,
         Permission.MANAGE_STUDENTS,
         Permission.MANAGE_GROUP,
+        Permission.CREATE_GROUP,
         Permission.ATTENDANCE_VIEW,
         Permission.ATTENDANCE_WRITE,
         Permission.PUBLISH_COURSE,
