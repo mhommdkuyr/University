@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 
 from fastapi import Request
@@ -8,7 +9,7 @@ from sqlalchemy import select
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.core.access_control import AccessContext, AccessPolicy, Permission, PlatformRole, StudentStatus
-from app.core.database import RolePolicyRecord, SessionLocal
+from app.core.database import ApiClientKey, RolePolicyRecord, SessionLocal
 from app.core.security import decode_access_token
 
 
@@ -27,6 +28,40 @@ class TenantMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         authorization = request.headers.get("Authorization", "")
+        api_key = request.headers.get("X-API-Key", "")
+
+        if not authorization.startswith("Bearer ") and api_key:
+            key_hash = hashlib.sha256(api_key.encode("utf-8")).hexdigest()
+            async with SessionLocal() as session:
+                record = await session.scalar(
+                    select(ApiClientKey).where(
+                        ApiClientKey.key_hash == key_hash,
+                        ApiClientKey.active.is_(True),
+                    )
+                )
+                if record is not None:
+                    if header_tenant and header_tenant != record.tenant_id:
+                        request.state.auth_error = "Tenant mismatch"
+                        return await call_next(request)
+                    try:
+                        scoped_permissions = {Permission(item) for item in json.loads(record.scopes)}
+                    except (ValueError, TypeError, json.JSONDecodeError):
+                        request.state.auth_error = "Invalid API key scopes"
+                        return await call_next(request)
+                    permissions = frozenset(scoped_permissions | {
+                        Permission.VIEW_PUBLIC,
+                        Permission.VIEW_PUBLIC_PROJECTS,
+                    })
+                    request.state.tenant_id = record.tenant_id
+                    request.state.access_context = AccessContext(
+                        tenant_id=record.tenant_id,
+                        user_id=record.created_by,
+                        role=PlatformRole.DEVELOPER,
+                        student_status=None,
+                        permissions=permissions,
+                    )
+                    return await call_next(request)
+
         if not authorization.startswith("Bearer "):
             return await call_next(request)
 
