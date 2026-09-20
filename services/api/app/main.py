@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from sqlalchemy import text
 
 from app.core.config import settings
@@ -75,6 +76,11 @@ app.include_router(audit_router, prefix="/api/v1/audit", tags=["Audit & Security
 @app.get("/", tags=["System"])
 async def root():
     return {"service": "University Digital Infrastructure API", "docs": "/api/v1/docs", "health": "/api/v1/health"}
+
+
+@app.head("/", include_in_schema=False)
+async def root_head():
+    return Response(status_code=200)
 
 
 @app.get("/api/v1/health", tags=["System"])
