@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.access_control import AccessPolicy, Permission, request_access_context
 from app.core.config import settings
+from app.core.rate_limit import limiter
 from app.core.database import AuditLog, SessionLocal
 from app.modules.access.service import AuthorizationService
 
@@ -45,6 +46,9 @@ async def execute_agent_command(request: Request, payload: AgentRequest):
     _access.require(context, Permission.USE_AI)
 
     tenant_id = context.tenant_id
+    allowed = await limiter.allow(f"ai:{tenant_id}:{context.user_id}", limit=30, window_seconds=60)
+    if not allowed:
+        raise HTTPException(status_code=429, detail="AI request rate limit exceeded")
 
     if "تسجيل" in payload.prompt or "enroll" in payload.prompt.lower():
         decision = _authorization.decide(context, Permission.COURSE_ENROLL, write=True)
