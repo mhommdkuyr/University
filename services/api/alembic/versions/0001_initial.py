@@ -152,7 +152,8 @@ def upgrade() -> None:
     op.create_index("ix_audit_logs_timestamp", "audit_logs", ["timestamp"])
 
     for table in TENANT_TABLES:
-        op.execute(sa.text(f"ALTER TABLE {table} ENABLE ROW LEVEL SECURITY; ALTER TABLE {table} FORCE ROW LEVEL SECURITY"))
+        op.execute(sa.text(f"ALTER TABLE {table} ENABLE ROW LEVEL SECURITY"))
+        op.execute(sa.text(f"ALTER TABLE {table} FORCE ROW LEVEL SECURITY"))
         op.execute(
             sa.text(
                 f"CREATE POLICY {table}_tenant_isolation ON {table} "
