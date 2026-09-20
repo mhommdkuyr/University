@@ -72,6 +72,11 @@ app.include_router(ai_agent_router, prefix="/api/v1/ai", tags=["AI Assistant & A
 app.include_router(audit_router, prefix="/api/v1/audit", tags=["Audit & Security Logs"])
 
 
+@app.get("/", tags=["System"])
+async def root():
+    return {"service": "University Digital Infrastructure API", "docs": "/api/v1/docs", "health": "/api/v1/health"}
+
+
 @app.get("/api/v1/health", tags=["System"])
 async def health_check():
     database = "unknown"
