@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,9 +26,11 @@ async def list_courses(
     session: AsyncSession = Depends(get_session),
 ):
     context = getattr(request.state, "access_context", None)
-    tenant_id = request.headers.get("X-Tenant-ID") or getattr(request.state, "tenant_id", "default")
+    if context is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    tenant_id = context.tenant_id
     query = select(Course).where(Course.tenant_id == tenant_id)
-    if context is None or context.role == PlatformRole.DEVELOPER:
+    if context.role == PlatformRole.DEVELOPER:
         query = query.where(Course.published.is_(True))
     elif Permission.VIEW_ACADEMICS not in context.permissions:
         query = query.where(Course.published.is_(True))
