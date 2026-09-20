@@ -1,8 +1,15 @@
-from fastapi import APIRouter, Request, Query
+from __future__ import annotations
+
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
-from typing import List
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.database import Project, get_session
+
 
 router = APIRouter()
+
 
 class SearchResultItem(BaseModel):
     type: str
@@ -10,14 +17,32 @@ class SearchResultItem(BaseModel):
     score: float
     url: str
 
-@router.get("/semantic", response_model=List[SearchResultItem])
-async def semantic_search(request: Request, q: str = Query(..., description="Natural language search query")):
-    tenant_id = getattr(request.state, "tenant_id", "default")
-    return [
-        {
-            "type": "project",
-            "title": "Smart Multi-Tenant Cloud Core",
-            "score": 0.94,
-            "url": f"https://{tenant_id}.platform.edu/projects/smart-multi-tenant-cloud-core"
-        }
-    ]
+
+@router.get("/semantic", response_model=list[SearchResultItem])
+async def semantic_search(
+    request: Request,
+    q: str,
+    session: AsyncSession = Depends(get_session),
+):
+    tenant_id = request.headers.get("X-Tenant-ID") or getattr(request.state, "tenant_id", "default")
+    query = select(Project).where(Project.tenant_id == tenant_id, Project.status == "approved")
+    rows = (await session.scalars(query)).all()
+
+    needle = q.strip().lower()
+    results = []
+    for row in rows:
+        haystack = f"{row.title} {row.description} {row.department}".lower()
+        if needle in haystack:
+            score = 1.0
+        else:
+            score = 0.25
+        results.append(
+            SearchResultItem(
+                type="project",
+                title=row.title,
+                score=score,
+                url=row.public_url,
+            )
+        )
+
+    return sorted(results, key=lambda item: item.score, reverse=True)[:50]

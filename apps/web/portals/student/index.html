@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>بوابة الطالب</title><link rel="stylesheet" href="/styles.css"></head>
+<body><main>
+<header><strong>بوابة الطالب</strong><a href="../web/index.html">الرئيسية</a></header>
+<section class="panel">
+<h1>مساحة الطالب</h1><p id="identity">جاري تحميل الهوية...</p>
+<div class="grid"><article><b>المقررات</b><div id="courses">...</div></article><article><b>المشاريع</b><div id="projects">...</div></article></div>
+<h2>المساعد الذكي</h2>
+<form id="ai-form"><input id="prompt" placeholder="اكتب سؤالك للجامعة" required><button class="button">إرسال</button><p id="ai-status"></p></form>
+</section>
+<script>
+const API='/api/v1';const token=localStorage.getItem('university_access_token')||'';const tenant=localStorage.getItem('university_tenant_id')||'demo';const H=()=>({Authorization:'Bearer '+token,'X-Tenant-ID':tenant});
+async function run(){if(!token){identity.textContent='سجّل الدخول من الصفحة الرئيسية أولًا.';return;}const me=await fetch(API+'/identity/me',{headers:H()}).then(r=>r.json());identity.textContent=me.authenticated?'مرحبًا '+me.full_name+' — '+me.role:'لم يتم التحقق من الجلسة';const cs=await fetch(API+'/academics/courses',{headers:H()}).then(r=>r.json());courses.innerHTML=(Array.isArray(cs)?cs:[]).map(c=>'<p><b>'+c.code+'</b> — '+c.title+'</p>').join('')||'<p>لا توجد مقررات.</p>';const ps=await fetch(API+'/projects/',{headers:{'X-Tenant-ID':tenant}}).then(r=>r.json());projects.innerHTML=(Array.isArray(ps)?ps:[]).map(p=>'<p>'+p.title+'</p>').join('')||'<p>لا توجد مشاريع منشورة.</p>';}
+document.querySelector('#ai-form').addEventListener('submit',async e=>{e.preventDefault();const r=await fetch(API+'/ai/execute',{method:'POST',headers:{...H(),'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt.value})});const d=await r.json();ai_status.textContent=d.response_text||d.detail||'تعذر التنفيذ';});run();
+</script></main></body></html>

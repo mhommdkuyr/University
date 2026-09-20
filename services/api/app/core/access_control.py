@@ -51,6 +51,7 @@ class Permission(str, Enum):
     VIEW_PUBLIC = "public.view"
     VIEW_PUBLIC_PROJECTS = "projects.public.view"
     PROJECT_MANAGE = "projects.manage"
+    MANAGE_API_KEYS = "api_keys.manage"
 
 
 @dataclass(frozen=True)
@@ -73,6 +74,7 @@ ROLE_DEFAULT_PERMISSIONS: Mapping[PlatformRole, frozenset[Permission]] = {
         Permission.VIEW_STUDENT_PRIVATE,
         Permission.MANAGE_STUDENTS,
         Permission.MANAGE_GROUP,
+        Permission.CREATE_GROUP,
         Permission.ATTENDANCE_VIEW,
         Permission.ATTENDANCE_WRITE,
         Permission.PUBLISH_COURSE,
@@ -83,6 +85,7 @@ ROLE_DEFAULT_PERMISSIONS: Mapping[PlatformRole, frozenset[Permission]] = {
         Permission.VIEW_PUBLIC,
         Permission.VIEW_PUBLIC_PROJECTS,
         Permission.PROJECT_MANAGE,
+        Permission.MANAGE_API_KEYS,
     }),
     PlatformRole.UNIVERSITY_ADMIN: frozenset({
         Permission.VIEW_ACADEMICS,
@@ -96,6 +99,7 @@ ROLE_DEFAULT_PERMISSIONS: Mapping[PlatformRole, frozenset[Permission]] = {
         Permission.MANAGE_CONTENT,
         Permission.VIEW_PUBLIC,
         Permission.VIEW_PUBLIC_PROJECTS,
+        Permission.MANAGE_API_KEYS,
     }),
     PlatformRole.DEAN: frozenset({
         Permission.VIEW_ACADEMICS,
