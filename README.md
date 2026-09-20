@@ -1,59 +1,74 @@
 # University Digital Infrastructure Platform & University API
 
-A multi-tenant SaaS digital infrastructure platform for higher-education institutions. The platform transforms traditional university operations into an API-first, AI-enabled, and Agentic ecosystem.
+A multi-tenant SaaS foundation for higher-education institutions. This repository now contains a working FastAPI service, tenant-scoped persistence, role/feature policies, public projects, teaching operations, an AI authorization gateway, and optional university-system adapters.
 
-## 🚀 Key Architecture Pillars
-1. **Multi-Tenant SaaS Foundation**: Complete isolation across universities via Tenant Resolution Middleware and PostgreSQL Row-Level Security (RLS).
-2. **Modular Monolith**: Clean domain boundaries (`auth`, `tenants`, `academics`, `projects`, `audit`, `search`, `ai_agent`, `identity`, `roles`, `features`, `teaching`) designed for seamless microservice extraction.
-3. **Sovereign AI & Agent Gateway**: Tenant-scoped RAG, model routing, and tool execution with strict multi-layer permission validation. The model may propose an action; deterministic authorization decides whether it can run.
-4. **University Identity & Lifecycle Access**: Student access is tied to the university's authoritative student record and enrollment status. Active students can receive academic/AI privileges; graduates and inactive students are restricted to the public/alumni surface according to university policy.
-5. **Adaptive University Environment**: The platform discovers what systems and pages a university already has and supports each module as platform-managed, externally integrated, or hidden. Existing university systems are never replaced merely because a platform module exists.
-6. **Teaching & Delegated Roles**: Instructor permissions cover groups, attendance, course publishing and related teaching operations. The representative role is configurable per university by authorized university leadership.
-7. **Developer-First Ecosystem**: Standardized REST API (/api/v1), OpenAPI 3.0 docs, hashed API keys, and event-driven Webhooks.
-8. **SEO-Optimized Public Showcase**: Server-renderable and indexable public pages for student graduation projects, research papers, student profiles and campus activities.
+## Architecture currently implemented
 
-## 📂 Monorepo Structure
+1. **Multi-tenant application isolation**: every core record carries a tenant identifier and service queries are scoped by tenant. PostgreSQL RLS is a production hardening step still required before a high-assurance multi-university launch.
+2. **Modular monolith**: domain boundaries include auth, tenants, academics, projects, audit, search, AI, identity, roles, features and teaching.
+3. **AI authorization gateway**: active students must pass deterministic authorization before AI use. The gateway supports an OpenAI-compatible provider and model fallback list; external calls remain disabled by default.
+4. **University identity lifecycle**: local university records can be checked by student number, and an optional Frappe Education REST adapter can verify an external student record.
+5. **Adaptive university features**: a university can select which platform modules are enabled and whether a module is platform-managed or externally integrated.
+6. **Teaching and delegated roles**: groups, attendance, course publishing and university-specific role policies are persisted and permission-checked.
+7. **Developer API**: REST and OpenAPI are available. API-key issuance, webhook management and event delivery are not yet production modules.
+8. **Public showcase**: the public web surface can list approved projects. Rich SEO/server-rendered project profiles remain a production-hardening item.
+
+## Repository
+
 ```text
 University/
 ├── apps/
-│   ├── web/                    # Public SEO-ready university web pages
-│   ├── university-dashboard/   # University operations & faculty management
-│   ├── student-portal/         # Active student academic workspace & project submissions
-│   ├── developer-portal/       # API keys, interactive API docs, webhook settings
-│   └── admin-dashboard/        # Platform-level SaaS management & AI routing
+│   ├── web/                    # public Arabic RTL web surface
+│   ├── university-dashboard/   # university operations UI
+│   ├── student-portal/         # active student UI
+│   ├── developer-portal/       # API documentation UI
+│   └── admin-dashboard/        # platform administration UI
 ├── services/
-│   └── api/                    # Core Modular Monolith API service (FastAPI)
-├── packages/
-│   ├── database/               # SQL migrations & RLS policies
-│   └── shared/                 # Shared types, schemas, and utilities
+│   └── api/                    # FastAPI modular monolith
 ├── infrastructure/
-│   └── docker/                 # Docker Compose & local dev environment
+│   └── docker/                 # local infrastructure
 └── docs/
-    ├── architecture/           # System design & API specifications
-    ├── authorization-and-roles.md
-    ├── adaptive-university-onboarding.md
-    └── implementation-status.md
+    ├── commercial-readiness.md
+    └── integrations/
+        └── frappe-education.md
 ```
 
-## 🛠️ Quickstart with Docker
+## Local quickstart
+
 ```bash
-# 1. Start database, cache and core services
-cd infrastructure/docker
-docker-compose up -d
-
-# 2. Access OpenAPI documentation
-open http://localhost:8000/api/v1/docs
+cd services/api
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload
 ```
 
-## 🔐 Current access model
-- The university student number is an integration identifier, not a password.
-- The authoritative university source determines the student's current status.
-- AI access is restricted to currently active students in the student role by default.
-- Graduates and inactive students do not inherit active-student academic/AI permissions.
-- Public visitors can access only intentionally published public content.
-- Sensitive writes are designed to require explicit confirmation after deterministic authorization.
+For production, use PostgreSQL, a shared Redis instance, TLS, managed secrets and a controlled migration process. Do not enable demo seeding in production.
 
-See `docs/authorization-and-roles.md` and `docs/adaptive-university-onboarding.md` for the detailed model.
+## Access model
 
-## ⚠️ Production note
-This branch establishes the domain contracts, database structures, access-control primitives, and API surfaces. University-specific identity adapters, database repositories, full authentication integration, transaction-local RLS wiring across all existing tables, and complete frontend implementation are still required before production deployment.
+- A university student number is an integration identifier, not a password.
+- The university's configured identity source determines current student status.
+- Active students can receive academic and AI permissions.
+- Graduates/inactive students lose active-student AI and academic permissions by default.
+- Public visitors can access only deliberately published project records.
+- Sensitive write operations require deterministic permission checks; AI cannot bypass those checks.
+- Login and AI routes have rate limiting with a Redis-backed implementation and in-process fallback.
+
+## Current verification
+
+The API has been deployed to a Render staging service from `complete-platform-v2`. The service has successfully built and reached the live state on Python 3.12, and the static public web surface has also reached live state.
+
+Staging intentionally uses SQLite and demo data. It is not the production database. A separate Render PostgreSQL instance exists for staging experiments, but the current Render SQL connector could not establish its required TLS connection, so PostgreSQL connectivity is not claimed as verified here.
+
+## Before commercial production
+
+Use the checklist in `docs/commercial-readiness.md`. The main remaining production gates are:
+
+- PostgreSQL migrations plus transaction-level tenant enforcement/RLS.
+- Managed Redis and distributed rate-limit verification.
+- Secure production authentication/SSO integration selected per university.
+- Complete API-key/webhook/billing modules where required.
+- Security testing, dependency scanning, backups/restore drills and incident procedures.
+- Production domain, TLS, secret rotation, monitoring and alerting.
+- A real pilot university identity/integration test with non-demo data.
