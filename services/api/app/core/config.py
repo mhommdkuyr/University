@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     ENVIRONMENT: str = "development"
     DATABASE_URL: str = "postgresql+asyncpg://uni_admin:uni_secure_password@postgres:5432/university_platform"
+    REDIS_URL: str = ""
     JWT_SECRET: str = "development_secret_key_change_in_production"
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
@@ -16,6 +17,10 @@ class Settings(BaseSettings):
     AI_MODEL: str = "gpt-4o-mini"
     AI_FALLBACK_MODELS: str = ""
     DEFAULT_API_KEY: str = ""
+    FRAPPE_EDUCATION_BASE_URL: str = ""
+    FRAPPE_EDUCATION_API_KEY: str = ""
+    FRAPPE_EDUCATION_API_SECRET: str = ""
+    FRAPPE_EDUCATION_STUDENT_NUMBER_FIELD: str = "student_number"
 
     model_config = SettingsConfigDict(
         env_file=".env",
