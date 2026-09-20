@@ -7,7 +7,7 @@ from pydantic import BaseModel, EmailStr
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import AuditLog, Tenant, User, get_session
+from app.core.database import AuditLog, Tenant, User, get_session, set_tenant_context
 from app.core.rate_limit import limiter
 from app.core.security import create_access_token, verify_password
 
@@ -48,6 +48,9 @@ async def login(
         )
 
     tenant_id = payload.tenant_id or x_tenant_id
+    if not tenant_id:
+        raise HTTPException(status_code=400, detail="tenant_id is required for university authentication")
+    await set_tenant_context(session, tenant_id)
 
     if tenant_id:
         user = await session.scalar(
