@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>لوحة الجامعة</title><link rel="stylesheet" href="/styles.css"></head>
+<body><main>
+<header><strong>لوحة إدارة الجامعة</strong><a href="../web/index.html">الرئيسية</a></header>
+<section class="panel"><h1>إدارة الجامعة</h1><p id="guard">جاري التحقق من الصلاحيات...</p><h2>الوحدات</h2><div id="features" class="grid"></div><h2>سياسات الأدوار</h2><pre id="roles"></pre></section>
+<script>
+const API='/api/v1',token=localStorage.getItem('university_access_token')||'',tenant=localStorage.getItem('university_tenant_id')||'demo',H={Authorization:'Bearer '+token,'X-Tenant-ID':tenant};
+async function run(){if(!token){guard.textContent='يلزم تسجيل الدخول.';return;}const me=await fetch(API+'/identity/me',{headers:H}).then(r=>r.json());guard.textContent='المستخدم: '+(me.full_name||'')+' — '+(me.role||'');const fs=await fetch(API+'/features/catalog',{headers:H}).then(r=>r.json());features.innerHTML=(Array.isArray(fs)?fs:[]).map(f=>'<article><b>'+f.feature_key+'</b><p>'+(f.enabled?'مفعلة':'غير مفعلة')+' — '+f.integration_mode+'</p></article>').join('');const rr=await fetch(API+'/roles/policies',{headers:H});roles.textContent=rr.ok?JSON.stringify(await rr.json(),null,2):'لا توجد صلاحية لعرض السياسات.';}run();
+</script></main></body></html>
