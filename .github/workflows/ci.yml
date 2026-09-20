@@ -1,0 +1,30 @@
+name: University CI
+on:
+  push:
+    branches: [main, complete-platform-v2]
+  pull_request:
+    branches: [main]
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    env:
+      DEFAULT_API_KEY: ${{ secrets.Default }}
+      AI_BASE_URL: https://api.openai.com/v1
+      AI_MODEL: gpt-4o-mini
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install -r services/api/requirements.txt
+      - run: python -m compileall services/api/app
+      - run: pytest -q services/api/tests
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate portal files
+        run: |
+          test -s apps/web/index.html
+          test -s apps/web/app.js
+          test -s apps/web/styles.css
+          for f in apps/student-portal/index.html apps/university-dashboard/index.html apps/admin-dashboard/index.html apps/developer-portal/index.html; do test -s "$f"; done
